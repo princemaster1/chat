@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Chat App</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    #messages {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+      width: 300px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background-color: #fff;
+      overflow-y: auto;
+      max-height: 300px;
+    }
+
+    #messages li {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    #form {
+      display: flex;
+      margin-top: 10px;
+    }
+
+    #m {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    button {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background-color: #4caf50;
+      color: #fff;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <form id="form" action="">
+    <input id="m" autocomplete="off" placeholder="Type your message..." />
+    <ul id="messages"></ul>
+    <button>Send</button>
+  </form>
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+  <script>
+    $(function () {
+      const socket = io();
+
+      // Listen for chat messages
+      socket.on('chat message', function (msg) {
+        $('#messages').append($('<li>').text(msg));
+      });
+
+      // Handle form submission
+      $('form').submit(function (e) {
+        e.preventDefault();
+        const msg = $('#m').val();
+        if (msg) {
+          socket.emit('chat message', msg);
+          $('#m').val('');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
