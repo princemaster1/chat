@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -8,7 +9,7 @@
 
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: #f0f0f0;
       margin: 0;
       padding: 0;
@@ -19,71 +20,260 @@
       height: 100vh;
     }
 
+    #chat-container {
+      max-width: 400px;
+      width: 100%;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    #header {
+      background-color: #075e54;
+      color: #fff;
+      padding: 10px;
+      text-align: center;
+    }
+
     #messages {
       list-style-type: none;
       padding: 0;
       margin: 0;
-      width: 300px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      background-color: #fff;
       overflow-y: auto;
       max-height: 300px;
     }
 
-    #messages li {
+    .message {
+      display: flex;
+      flex-direction: column;
+      margin: 5px;
+    }
+
+    .user-message {
+      background-color: #dcf8c6;
+      border-radius: 10px;
       padding: 10px;
-      border-bottom: 1px solid #ddd;
+      align-self: flex-end;
+    }
+
+    .other-message {
+      background-color: #fff;
+      border-radius: 10px;
+      padding: 10px;
+      align-self: flex-start;
+    }
+
+    .time {
+      font-size: 10px;
+      color: #888;
+      margin-top: 5px;
+    }
+
+    .align-right {
+      text-align: right;
+    }
+
+    .align-left {
+      text-align: left;
+    }
+
+    .username {
+      font-size: 10px;
+      color: #888;
+    }
+
+    .delete-btn {
+      cursor: pointer;
+      align-self: flex-end;
     }
 
     #form {
       display: flex;
+      flex-direction: column;
       margin-top: 10px;
+      padding: 10px;
+      border-top: 1px solid #ddd;
+      background-color: #fff;
     }
 
     #m {
-      flex: 1;
       padding: 10px;
       border: 1px solid #ddd;
       border-radius: 5px;
+      margin-bottom: 10px;
     }
 
-    button {
+    #submitbtn {
       padding: 10px;
-      border: 1px solid #ddd;
+      border: 1px solid #4caf50;
       border-radius: 5px;
       background-color: #4caf50;
       color: #fff;
       cursor: pointer;
+      align-self: flex-end;
     }
-  </style>
-</head>
-<body>
-  <form id="form" action="">
-    <input id="m" autocomplete="off" placeholder="Type your message..." />
-    <ul id="messages"></ul>
-    <button>Send</button>
-  </form>
-  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
-  <script>
-    $(function () {
-      const socket = io();
+    button {
+      padding: 10px;
+      border: 1px solid #4caf50;
+      border-radius: 5px;
+      background-color: #4caf50;
+      color: #fff;
+      cursor: pointer;
+      align-self: flex-end;
+    }
 
-      socket.on('chat message', function (msg) {
-        $('#messages').append($('<li>').text(msg));
-      });
+    #mediaBtn {
+      padding: 10px;
+      border: 1px solid #4caf50;
+      border-radius: 5px;
+      background-color: #4caf50;
+      color: #fff;
+      cursor: pointer;
+      align-self: flex-start;
+    }
 
-  
-      $('form').submit(function (e) {
-        e.preventDefault();
-        const msg = $('#m').val();
-        if (msg) {
-          socket.emit('chat message', msg);
-          $('#m').val('');
+
+    /* Modal styles (you can add more styles as needed) */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgb(0, 0, 0);
+      background-color: rgba(0, 0, 0, 0.4);
+      padding-top: 60px;
+    }
+
+    .modal-content {
+      background-color: #fefefe;
+      margin: 5% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+    }
+
+    </style>
+    </head>
+    <body>
+      <div id="usernameModal" class="modal">
+        <div class="modal-content">
+          <span class="close" onclick="closeUsernameModal()">&times;</span>
+          <p>Enter your username:</p>
+          <input type="text" id="usernameInput" />
+          <button onclick="setUsername()">Set Username</button>
+        </div>
+      </div>
+
+      <div id="chat-container">
+        <div id="header">
+          <span id="username"></span> Chat App
+        </div>
+        <ul id="messages"></ul>
+        <form id="form">
+          <input type="file" id="fileInput" style="display: none;" />
+          <input id="m" autocomplete="off" placeholder="Type your message..." />
+          <button id="submitbtn" type="submit">Send</button>
+        </form>
+      </div>
+
+      <!-- Include Socket.IO -->
+      <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+      <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+      <script>
+        const socket = io();
+
+        function setUsername() {
+          const username = $('#usernameInput').val();
+          if (username) {
+            socket.emit('set username', { username });
+            $('#usernameModal').css('display', 'none');
+            $('#username').text(username);
+          }
         }
-      });
-    });
-  </script>
-</body>
-</html>
+
+        function openUsernameModal() {
+          $('#usernameModal').css('display', 'block');
+        }
+
+        function openDeleteModal(messageId) {
+          const deleteModal = $('#deleteModal');
+          deleteModal.css('display', 'block');
+
+          $('#deleteConfirmBtn').off().on('click', function () {
+            socket.emit('delete message', { messageId: messageId.toString() });
+            deleteModal.css('display', 'none');
+          });
+
+          $('#deleteCancelBtn').off().on('click', function () {
+            deleteModal.css('display', 'none');
+          });
+        }
+
+        socket.on('connect', function () {
+          if (!$('#username').text().trim()) {
+            openUsernameModal();
+          }
+        });
+
+        socket.on('user joined', function ({ username }) {
+          $('#messages').append(`<li class="message align-left">${username} joined the chat</li>`);
+        });
+
+        socket.on('chat message', function (data) {
+          const { msg, senderId, time, isUser, username, isMedia } = data;
+
+          const messageClass = isUser ? 'user-message' : 'other-message';
+          const alignmentClass = isUser ? 'align-right' : 'align-left';
+          const deleteButton = isUser ? `<span class="delete-btn" onclick="openDeleteModal('${senderId}')"></span>` : '';
+
+          const mediaContent = isMedia ? `<img src="${msg}" alt="Media" />` : msg;
+
+          const messageHtml = `
+            <li class="message ${alignmentClass}" senderId="${senderId}">
+              <div class="${messageClass}">
+                <div class="username">${username}</div>
+                <div class="time">${formatTime(time)}</div>
+                ${deleteButton}
+                ${mediaContent}
+              </div>
+            </li>
+          `;
+
+          $('#messages').append(messageHtml);
+          scrollToBottom();
+        });
+
+        socket.on('delete message', function ({ messageId }) {
+          $(`li[senderId="${messageId}"]`).remove();
+          scrollToBottom();
+        });
+
+        $('#form').submit(function (e) {
+          e.preventDefault();
+          const msg = $('#m').val();
+          if (msg) {
+            const time = new Date().getTime();
+            socket.emit('chat message', { msg, time });
+            $('#m').val('');
+          }
+        });
+
+        function formatTime(timestamp) {
+          const date = new Date(timestamp);
+          const hours = date.getHours().toString().padStart(2, '0');
+          const minutes = date.getMinutes().toString().padStart(2, '0');
+          return `${hours}:${minutes}`;
+        }
+
+        function scrollToBottom() {
+          const chatContainer = $('#chat-container');
+          chatContainer.scrollTop(chatContainer[0].scrollHeight);
+        }
+
+      </script>
+    </body>
+                                   </html>
